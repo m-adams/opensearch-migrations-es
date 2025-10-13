@@ -31,6 +31,12 @@ public class ConnectionContext {
         HTTPS
     }
 
+    public enum TargetType {
+        OPENSEARCH,
+        ELASTICSEARCH,
+        ELASTICSEARCH_SERVERLESS
+    }
+
     @JsonProperty("uri")
     private final URI uri;
     @JsonProperty("protocol")
@@ -43,6 +49,9 @@ public class ConnectionContext {
     private final boolean awsSpecificAuthentication;
     @JsonProperty("disableCompression")
     private final boolean disableCompression;
+
+    @JsonProperty("targetType")
+    private final TargetType targetType;
 
     @JsonIgnore
     private TlsCredentialsProvider tlsCredentialsProvider;
@@ -77,13 +86,23 @@ public class ConnectionContext {
 
         var basicAuthEnabled = params.getUsername() != null && params.getPassword() != null;
         var sigv4Enabled = params.getAwsRegion() != null && params.getAwsServiceSigningName() != null;
+        var apiKeyEnabled = params.getApiKey() != null;
 
         if (basicAuthEnabled && sigv4Enabled) {
             throw new IllegalArgumentException("Cannot have both Basic Auth and SigV4 Auth enabled.");
         }
+        if (basicAuthEnabled && apiKeyEnabled) {
+            throw new IllegalArgumentException("Cannot have both Basic Auth and API Key enabled.");
+        }
+        if (sigv4Enabled && apiKeyEnabled) {
+            throw new IllegalArgumentException("Cannot have both SigV4 Auth and API Key enabled.");
+        }
         awsSpecificAuthentication = sigv4Enabled;
 
-        if (basicAuthEnabled) {
+        if (apiKeyEnabled) {
+            requestTransformer = new ApiKeyAuthTransformer(params.getApiKey());
+        }
+        else if (basicAuthEnabled) {
             requestTransformer = new BasicAuthTransformer(params.getUsername(), params.getPassword());
         }
         else if (sigv4Enabled) {
@@ -108,6 +127,7 @@ public class ConnectionContext {
         }
 
         this.disableCompression = params.isDisableCompression();
+        this.targetType = params.getTargetType();
     }
 
     // Used for presentation to user facing output
@@ -137,6 +157,8 @@ public class ConnectionContext {
 
         String getPassword();
 
+        String getApiKey();
+
         String getAwsRegion();
 
         String getAwsServiceSigningName();
@@ -150,6 +172,8 @@ public class ConnectionContext {
         boolean isDisableCompression();
 
         boolean isInsecure();
+
+        TargetType getTargetType();
 
         default ConnectionContext toConnectionContext() {
             return new ConnectionContext(this);
@@ -165,6 +189,12 @@ public class ConnectionContext {
         public String host;
 
         @Parameter(
+            names = {"--target-type", "--targetType"},
+            description = "Target cluster type: opensearch, elasticsearch, elasticsearch-serverless",
+            required = false)
+        public TargetType targetType = TargetType.OPENSEARCH;
+
+        @Parameter(
             names = {ArgNameConstants.TARGET_USERNAME_ARG_CAMEL_CASE, ArgNameConstants.TARGET_USERNAME_ARG_KEBAB_CASE },
             description = "Optional.  The target username; if not provided, will assume no auth on target",
             required = false)
@@ -175,6 +205,12 @@ public class ConnectionContext {
             description = "Optional.  The target password; if not provided, will assume no auth on target",
             required = false)
         public String password = null;
+
+        @Parameter(
+            names = {"--target-api-key", "--targetApiKey"},
+            description = "Optional. The target API key for Elasticsearch Serverless authentication",
+            required = false)
+        public String apiKey = null;
 
         @Parameter(
             names = {"--target-cacert", "--targetCaCert" },
@@ -222,6 +258,16 @@ public class ConnectionContext {
         @Override
         public boolean isDisableCompression() {
             return advancedArgs.isDisableCompression();
+        }
+
+        @Override
+        public String getApiKey() {
+            return apiKey;
+        }
+
+        @Override
+        public TargetType getTargetType() {
+            return targetType;
         }
     }
 
@@ -299,6 +345,16 @@ public class ConnectionContext {
         public boolean isDisableCompression() {
             // No need to interrogate source cluster for compression information
              return true;
+        }
+
+        @Override
+        public String getApiKey() {
+            return null; // Source doesn't support API key auth
+        }
+
+        @Override
+        public TargetType getTargetType() {
+            return TargetType.OPENSEARCH; // Source is always OpenSearch
         }
     }
 
