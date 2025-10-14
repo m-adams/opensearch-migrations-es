@@ -19,6 +19,14 @@ public class ElasticsearchClient extends OpenSearchClient {
         super(client, failedRequestsLogger, version, compressionMode);
     }
 
+    /**
+     * Get the ConnectionContext for this client.
+     * Useful for checking target type (e.g., ELASTICSEARCH_SERVERLESS).
+     */
+    public ConnectionContext getConnectionContext() {
+        return client.getConnectionContext();
+    }
+
     @Override
     protected String getCreateIndexPath(String indexName) {
         // Elasticsearch uses the same create index path as OpenSearch

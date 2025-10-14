@@ -49,7 +49,10 @@ public class OpenSearchClientFactory {
             version = getClusterVersion();
         }
 
-        if (!connectionContext.isDisableCompression() && Boolean.TRUE.equals(getCompressionEnabled())) {
+        // Skip compression check for Elasticsearch Serverless as cluster settings API is not available
+        if (!connectionContext.isDisableCompression() && 
+            connectionContext.getTargetType() != ConnectionContext.TargetType.ELASTICSEARCH_SERVERLESS &&
+            Boolean.TRUE.equals(getCompressionEnabled())) {
             compressionMode = CompressionMode.GZIP_BODY_COMPRESSION;
         } else {
             compressionMode = CompressionMode.UNCOMPRESSED;

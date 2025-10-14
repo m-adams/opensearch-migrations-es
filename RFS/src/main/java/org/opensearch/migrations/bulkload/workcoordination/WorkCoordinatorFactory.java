@@ -5,7 +5,9 @@ import java.util.function.Consumer;
 
 import org.opensearch.migrations.Version;
 import org.opensearch.migrations.VersionMatchers;
+import org.opensearch.migrations.bulkload.common.http.ConnectionContext;
 import org.opensearch.migrations.bulkload.version_es_6_8.OpenSearchWorkCoordinator_ES_6_8;
+import org.opensearch.migrations.bulkload.version_es_8_x.OpenSearchWorkCoordinator_ES_8_Serverless;
 import org.opensearch.migrations.bulkload.version_os_2_11.OpenSearchWorkCoordinator_OS_2_11;
 import org.opensearch.migrations.bulkload.workcoordination.IWorkCoordinator.WorkItemAndDuration;
 
@@ -25,6 +27,15 @@ public class WorkCoordinatorFactory {
             long tolerableClientServerClockDifferenceSeconds,
             String workerId
         ) {
+        // Check if this is Elasticsearch Serverless
+        if (isElasticsearchServerless(httpClient)) {
+            log.info("Using Elasticsearch Serverless WorkCoordinator");
+            return new OpenSearchWorkCoordinator_ES_8_Serverless(httpClient,
+                indexNameSuffix,
+                tolerableClientServerClockDifferenceSeconds,
+                workerId);
+        }
+        
         if (VersionMatchers.anyOS.or(VersionMatchers.isES_7_X).or(VersionMatchers.isES_8_X).test(version)) {
             return new OpenSearchWorkCoordinator_OS_2_11(httpClient,
                 indexNameSuffix,
@@ -47,6 +58,17 @@ public class WorkCoordinatorFactory {
             Clock clock,
             Consumer<WorkItemAndDuration> workItemConsumer
         ) {
+        // Check if this is Elasticsearch Serverless
+        if (isElasticsearchServerless(httpClient)) {
+            log.info("Using Elasticsearch Serverless WorkCoordinator");
+            return new OpenSearchWorkCoordinator_ES_8_Serverless(httpClient,
+                indexNameSuffix,
+                tolerableClientServerClockDifferenceSeconds,
+                workerId,
+                clock,
+                workItemConsumer);
+        }
+        
         if (VersionMatchers.anyOS.or(VersionMatchers.isES_7_X).or(VersionMatchers.isES_8_X).test(version)) {
             return new OpenSearchWorkCoordinator_OS_2_11(httpClient,
                 indexNameSuffix,
@@ -69,5 +91,16 @@ public class WorkCoordinatorFactory {
 
     public String getFinalIndexName() {
         return OpenSearchWorkCoordinator.getFinalIndexName(indexNameSuffix);
+    }
+
+    /**
+     * Check if the httpClient is connected to Elasticsearch Serverless.
+     */
+    private boolean isElasticsearchServerless(AbstractedHttpClient httpClient) {
+        if (httpClient instanceof CoordinateWorkHttpClient) {
+            var client = (CoordinateWorkHttpClient) httpClient;
+            return client.getConnectionContext().getTargetType() == ConnectionContext.TargetType.ELASTICSEARCH_SERVERLESS;
+        }
+        return false;
     }
 }
