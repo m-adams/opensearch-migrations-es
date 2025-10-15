@@ -17,6 +17,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class CoordinateWorkHttpClient implements AbstractedHttpClient {
 
+    private final ConnectionContext connectionContext;
     private final RestClient restClient;
 
     @Getter
@@ -39,7 +40,12 @@ public class CoordinateWorkHttpClient implements AbstractedHttpClient {
     }
 
     public CoordinateWorkHttpClient(ConnectionContext connectionContext) {
+        this.connectionContext = connectionContext;
         this.restClient = new RestClient(connectionContext);
+    }
+
+    public ConnectionContext getConnectionContext() {
+        return connectionContext;
     }
 
     @Override

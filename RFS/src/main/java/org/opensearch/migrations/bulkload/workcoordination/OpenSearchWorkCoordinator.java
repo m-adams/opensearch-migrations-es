@@ -120,7 +120,7 @@ public abstract class OpenSearchWorkCoordinator implements IWorkCoordinator {
         final List<String> successorWorkItemIds;
     }
 
-    protected final String indexName;
+    protected String indexName;  // Non-final to allow subclasses to customize for serverless
     private final long tolerableClientServerClockDifferenceSeconds;
     private final AbstractedHttpClient httpClient;
     private final String workerId;
@@ -165,6 +165,14 @@ public abstract class OpenSearchWorkCoordinator implements IWorkCoordinator {
             .filter(s->!s.isEmpty())
             .map(s->"_" + s)
             .orElse("");
+    }
+
+    /**
+     * Allows subclasses to customize the index name (e.g., for Elasticsearch Serverless
+     * which doesn't allow hidden indices starting with dot).
+     */
+    protected void setIndexName(String indexName) {
+        this.indexName = indexName;
     }
 
     @FunctionalInterface

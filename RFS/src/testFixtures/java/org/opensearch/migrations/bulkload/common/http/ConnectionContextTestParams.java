@@ -11,6 +11,7 @@ public class ConnectionContextTestParams implements ConnectionContext.IParams {
     private String host;
     private String username;
     private String password;
+    private String apiKey;
     private String awsRegion;
     private String awsServiceSigningName;
     @Builder.Default
@@ -21,4 +22,9 @@ public class ConnectionContextTestParams implements ConnectionContext.IParams {
     private Path caCert;
     private Path clientCert;
     private Path clientCertKey;
+
+    @Override
+    public ConnectionContext.TargetType getTargetType() {
+        return ConnectionContext.TargetType.OPENSEARCH; // Default for test params
+    }
 }

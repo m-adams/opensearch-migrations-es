@@ -49,12 +49,15 @@ public class OpenSearchClientFactory {
             version = getClusterVersion();
         }
 
-        if (!connectionContext.isDisableCompression() && Boolean.TRUE.equals(getCompressionEnabled())) {
+        // Skip compression check for Elasticsearch Serverless as cluster settings API is not available
+        if (!connectionContext.isDisableCompression() && 
+            connectionContext.getTargetType() != ConnectionContext.TargetType.ELASTICSEARCH_SERVERLESS &&
+            Boolean.TRUE.equals(getCompressionEnabled())) {
             compressionMode = CompressionMode.GZIP_BODY_COMPRESSION;
         } else {
             compressionMode = CompressionMode.UNCOMPRESSED;
         }
-        var clientClass = getOpenSearchClientClass(version);
+        var clientClass = getClientClass(version, connectionContext.getTargetType());
         try {
             if (restClient == null && failedRequestsLogger == null) {
                 return clientClass.getConstructor(ConnectionContext.class, Version.class, CompressionMode.class)
@@ -76,6 +79,14 @@ public class OpenSearchClientFactory {
             return OpenSearchClient_ES_5_6.class;
         }
         throw new IllegalArgumentException("Unsupported version: " + version);
+    }
+
+    private Class<? extends OpenSearchClient> getClientClass(Version version, ConnectionContext.TargetType targetType) {
+        if (targetType == ConnectionContext.TargetType.ELASTICSEARCH || 
+            targetType == ConnectionContext.TargetType.ELASTICSEARCH_SERVERLESS) {
+            return ElasticsearchClient.class;
+        }
+        return getOpenSearchClientClass(version);
     }
 
     /** Amazon OpenSearch Serverless clusters don't have a version number, but

@@ -17,6 +17,7 @@ import org.opensearch.migrations.bulkload.version_es_5_4.SnapshotReader_ES_5_4;
 import org.opensearch.migrations.bulkload.version_es_6_8.RemoteWriter_ES_6_8;
 import org.opensearch.migrations.bulkload.version_es_6_8.SnapshotReader_ES_6_8;
 import org.opensearch.migrations.bulkload.version_es_7_10.SnapshotReader_ES_7_10;
+import org.opensearch.migrations.bulkload.version_es_8_x.RemoteWriter_ES_8_X;
 import org.opensearch.migrations.bulkload.version_os_2_11.RemoteWriter_OS_2_11;
 import org.opensearch.migrations.bulkload.version_universal.RemoteReader;
 
@@ -37,6 +38,7 @@ public class ClusterProviderRegistry {
             new SnapshotReader_ES_7_10(),
             new RemoteWriter_OS_2_11(),
             new RemoteWriter_ES_6_8(),
+            new RemoteWriter_ES_8_X(),
             new RemoteReader()
         );
     }
