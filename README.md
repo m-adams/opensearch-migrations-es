@@ -27,7 +27,30 @@
 
 ## Overview
 
-**This is a fork of the [OpenSearch Migration Assistant](https://github.com/opensearch-project/opensearch-migrations) with added support for Elasticsearch Serverless as a migration target.**
+**This is a fork of the [OpenSearch Migration Assistant](https://github.com/opensearch-project/opensearch-migrations) extended specifically for migrating to Elasticsearch Serverless on Elastic Cloud.**
+
+### Why Elasticsearch Serverless?
+
+Moving from OpenSearch to Elasticsearch Serverless isn't just a platform change—it's a fundamental shift in how you operate search infrastructure:
+
+**What disappears:**
+- Shard count calculations
+- Replica factor tuning
+- Node sizing decisions
+- Capacity planning
+- Manual scaling operations
+- Infrastructure patching
+
+**What you get:**
+- Automatic scaling that responds to actual demand
+- Zero infrastructure management
+- Pay-per-use economics (scales to zero when idle)
+- Enterprise security and compliance built-in
+- Modern vector search with [Better Binary Quantization (BBQ)](https://www.elastic.co/docs/reference/elasticsearch/index-settings/bbq)
+
+**For AWS users:** Elasticsearch Serverless is available through the [AWS Marketplace](https://aws.amazon.com/marketplace/seller-profile?id=4bd95219-3608-4318-8590-e86aface431e), making procurement seamless within your existing AWS relationship.
+
+**Note:** This toolkit also supports Elastic Cloud hosted clusters, though those still require infrastructure management similar to OpenSearch Service (shards, replicas, capacity planning). The real operational transformation comes with Serverless.
 
 OpenSearch Migration Assistant is a comprehensive set of tools designed to facilitate upgrades, migrations, and comparisons for OpenSearch and Elasticsearch clusters. This project aims to simplify the process of moving between different versions and platforms while ensuring data integrity and performance.
 
