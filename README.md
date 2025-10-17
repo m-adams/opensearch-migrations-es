@@ -1,7 +1,9 @@
-# OpenSearch Migration Assistant (Fork with Elasticsearch Serverless Support)
+# Migrate from OpenSearch to Elasticsearch Serverless
+
+**A production-ready fork of OpenSearch Migration Assistant, extended specifically for Elasticsearch Serverless on Elastic Cloud.**
 
 ## Table of Contents
-- [OpenSearch Migration Assistant (Fork with Elasticsearch Serverless Support)](#opensearch-migration-assistant-fork-with-elasticsearch-serverless-support)
+- [Migrate from OpenSearch to Elasticsearch Serverless](#migrate-from-opensearch-to-elasticsearch-serverless)
   - [Table of Contents](#table-of-contents)
   - [Overview](#overview)
   - [Fork Highlights](#fork-highlights)
